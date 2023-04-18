@@ -3,6 +3,12 @@ require 'net/http'
 
 use Rack::Static, :root => 'public'
 
+use Rack::Auth::Basic do |username, password|
+  ENV['HTTP_BASIC_AUTH_PASSWORD'].present? &&
+    username == 'user' &&
+    password == ENV['HTTP_BASIC_AUTH_PASSWORD']
+end
+
 app = lambda do |env|
   request_uri = env['REQUEST_URI']
 
