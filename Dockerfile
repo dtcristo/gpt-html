@@ -1,18 +1,14 @@
-# syntax = docker/dockerfile:1
-
-FROM ruby:3.2-alpine
-
+FROM ruby:3.2-alpine as base
 WORKDIR /app
 
-RUN apk add build-base
+FROM base as build
+COPY Gemfile Gemfile.lock .
+RUN set -eux; \
+    apk add --no-cache build-base; \
+    bundle install;
 
-# Install application gems
-COPY Gemfile Gemfile.lock ./
-RUN bundle install
-
-# Copy application code
+FROM base as app
+COPY --from=build /usr/local/bundle /usr/local/bundle
 COPY . .
-
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 9292
 CMD ["puma"]
