@@ -1,14 +1,22 @@
-FROM ruby:3.2-alpine as base
+FROM rust:alpine AS chef
 WORKDIR /app
+RUN apk add --no-cache build-base
+RUN cargo install cargo-chef
 
-FROM base as build
-COPY Gemfile Gemfile.lock .
-RUN set -eux; \
-    apk add --no-cache build-base; \
-    bundle install;
-
-FROM base as app
-COPY --from=build /usr/local/bundle /usr/local/bundle
+FROM chef AS prepare
 COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+FROM chef AS build
+COPY --from=prepare /app/recipe.json recipe.json
+RUN apk add --no-cache openssl-dev
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN cargo build --release --bin gpt-html
+
+FROM alpine AS runtime
+ENV COMMIT_SHA=$COMMIT_SHA
+WORKDIR /app
+COPY --from=build /app/target/release/gpt-html .
 EXPOSE 9292
-CMD ["puma"]
+CMD ["/app/gpt-html"]

@@ -1,4 +1,3 @@
 *
-!/public/
-!/config.ru
-!/Gemfile*
+!/src/
+!/Cargo*
