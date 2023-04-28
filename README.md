@@ -37,3 +37,12 @@ bundle exec puma
 ```
 
 Application live at [localhost:9292](http://localhost:9292/).
+
+## License
+
+Licensed under either of
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT License ([LICENSE-MIT](LICENSE-MIT))
+
+at your option.
