@@ -1,13 +1,13 @@
+use std::fmt::Display;
+
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
 };
-use std::fmt::Display;
-use strum_macros::AsRefStr;
 
 pub type Result<T> = core::result::Result<T, Error>;
 
-#[derive(Debug, AsRefStr)]
+#[derive(Debug)]
 pub enum Error {
     SystemTimeError,
     EnvironmentError,
@@ -20,7 +20,8 @@ pub enum Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        println!("->> {:<12} - {self:?}", "INTO_RES");
+        println!("\n----------");
+        println!("Error: {self:?}");
 
         // Create a placeholder Axum reponse.
         let mut response = StatusCode::INTERNAL_SERVER_ERROR.into_response();
@@ -34,7 +35,7 @@ impl IntoResponse for Error {
 
 impl Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_ref())
+        write!(f, "{:?}", self)
     }
 }
 

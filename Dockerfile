@@ -15,7 +15,9 @@ COPY . .
 RUN cargo build --release --bin gpt-html
 
 FROM alpine AS runtime
-ENV COMMIT_SHA=$COMMIT_SHA
+ARG COMMIT_SHA
+ENV COMMIT_SHA="$COMMIT_SHA"
+ENV DOCKER="true"
 WORKDIR /app
 COPY --from=build /app/target/release/gpt-html .
 EXPOSE 9292
