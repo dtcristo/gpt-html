@@ -1,4 +1,4 @@
-use std::{env, future};
+use std::future;
 
 use axum::{body::StreamBody, http::Uri, response::IntoResponse};
 use eventsource_stream::Eventsource;
@@ -6,7 +6,10 @@ use futures::{StreamExt, TryStreamExt};
 use reqwest::{header, Client};
 use serde::{Deserialize, Serialize};
 
-use crate::error::{Error, Result};
+use crate::{
+    env,
+    error::{Error, Result},
+};
 
 #[derive(Debug, Serialize)]
 struct ChatCompletionsBody {
@@ -70,7 +73,7 @@ Start the reponse with the following exact characters:
             "authorization",
             &format!(
                 "Bearer {}",
-                env::var("OPENAI_API_KEY").map_err(|_| Error::EnvironmentError)?
+                env::openai_api_key().ok_or(Error::EnvironmentError)?
             ),
         )
         .body(serde_json::to_string(&body).map_err(|_| Error::SerializationError)?)

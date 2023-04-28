@@ -1,3 +1,4 @@
 *
 !/src/
-!/Cargo*
+!/Cargo.lock
+!/Cargo.toml
