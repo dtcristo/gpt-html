@@ -23,20 +23,17 @@ The application is deployed at [gpt.dtcristo.com](https://gpt.dtcristo.com/) but
 
 ## Usage
 
-Requires a Ruby environment, tested with Ruby 3.2.
+Get an [OpenAI API key](https://platform.openai.com/account/api-keys). Run locally in Docker.
 
 ```sh
 # Set OpenAI API key as environment variable.
 export OPENAI_API_KEY="your_api_key_here"
 
-# Install dependencies.
-bundle install
-
-# Start the web server.
-bundle exec puma
+# Build and run in Docker.
+docker run --env OPENAI_API_KEY --publish 8080:8080 "$(docker build --quiet .)"
 ```
 
-Application live at [localhost:9292](http://localhost:9292/).
+Application live at [localhost:8080](http://localhost:8080/).
 
 ## License
 
