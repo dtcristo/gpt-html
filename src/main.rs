@@ -14,6 +14,7 @@ async fn main() {
     println!("Starting server...");
 
     let addr = if env::docker() {
+        env::print();
         SocketAddr::from(([0, 0, 0, 0], 8080))
     } else {
         SocketAddr::from(([127, 0, 0, 1], 8080))

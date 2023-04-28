@@ -19,8 +19,6 @@ pub async fn handler() -> Result<impl IntoResponse> {
     println!("\n----------");
     println!("Health");
 
-    env::print();
-
     env::openai_api_key().ok_or(Error::EnvironmentError)?;
 
     let time = SystemTime::now()

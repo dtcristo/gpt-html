@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 FROM rust:alpine AS chef
 WORKDIR /app
 RUN apk add --no-cache build-base

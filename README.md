@@ -30,7 +30,7 @@ Get an [OpenAI API key](https://platform.openai.com/account/api-keys). Run local
 export OPENAI_API_KEY="your_api_key_here"
 
 # Build and run in Docker.
-docker run --env OPENAI_API_KEY --publish 8080:8080 "$(docker build --quiet .)"
+docker run --rm --env OPENAI_API_KEY --publish 8080:8080 "$(docker build --quiet .)"
 ```
 
 Application live at [localhost:8080](http://localhost:8080/).
