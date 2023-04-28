@@ -423,7 +423,6 @@ dependencies = [
  "axum-extra",
  "eventsource-stream",
  "futures",
- "lazy_static",
  "reqwest",
  "serde",
  "serde_json",

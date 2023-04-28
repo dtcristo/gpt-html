@@ -11,7 +11,6 @@ use axum_extra::middleware::option_layer;
 use eventsource_stream::Eventsource;
 use futures::future;
 use futures::{StreamExt, TryStreamExt};
-use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::{
     env,
@@ -24,22 +23,11 @@ use tower_http::{services::ServeDir, validate_request::ValidateRequestHeaderLaye
 
 mod error;
 
-lazy_static! {
-    static ref OPENAI_API_KEY: String =
-        env::var("OPENAI_API_KEY").expect("`OPENAI_API_KEY` environment variable should be set");
-    static ref HTTP_BASIC_AUTH_PASSWORD: String = env::var("HTTP_BASIC_AUTH_PASSWORD")
-        .expect("`HTTP_BASIC_AUTH_PASSWORD` environment variable should be set");
-    static ref COMMIT_SHA: String =
-        env::var("COMMIT_SHA").expect("`COMMIT_SHA` environment variable should be set");
-}
-
 #[tokio::main]
 async fn main() {
-    println!("starting server...");
+    println!("Starting server...");
 
-    load_environment();
-
-    let addr = SocketAddr::from(([0, 0, 0, 0], 9292));
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     Server::bind(&addr)
         .serve(app().into_make_service())
         .with_graceful_shutdown(shutdown_signal())
@@ -97,8 +85,9 @@ async fn shutdown_signal() {
 
 #[derive(Debug, Serialize)]
 struct HealthBody {
-    time: String,
+    time: u64,
     commit_sha: String,
+    basic_auth_enabled: bool,
 }
 
 #[derive(Debug, Serialize)]
@@ -129,35 +118,31 @@ struct Delta {
     content: String,
 }
 
-fn load_environment() {
-    assert!(
-        (*OPENAI_API_KEY).len() > 0,
-        "`OPENAI_API_KEY` should not be empty"
-    );
-    assert!(
-        (*HTTP_BASIC_AUTH_PASSWORD).len() > 0,
-        "`HTTP_BASIC_AUTH_PASSWORD` should not be empty"
-    );
-    assert!((*COMMIT_SHA).len() > 0, "`COMMIT_SHA` should not be empty");
-}
-
 async fn health() -> Result<impl IntoResponse> {
-    println!("health");
+    println!("\n----------");
+    println!("Health");
+    println!("----------");
+
+    env::var("OPENAI_API_KEY").map_err(|_| Error::EnvironmentError)?;
 
     let time = SystemTime::now()
         .duration_since(SystemTime::UNIX_EPOCH)
         .map_err(|_| Error::SystemTimeError)?
-        .as_secs()
-        .to_string();
-    let commit_sha = (*COMMIT_SHA).clone();
+        .as_secs();
+    let commit_sha = env::var("COMMIT_SHA").unwrap_or_else(|_| "unknown".to_string());
+    let basic_auth_enabled = env::var("HTTP_BASIC_AUTH_PASSWORD").is_ok();
 
-    Ok(Json(HealthBody { time, commit_sha }))
+    Ok(Json(HealthBody {
+        time,
+        basic_auth_enabled,
+        commit_sha,
+    }))
 }
 
 async fn handler(uri: Uri) -> Result<impl IntoResponse> {
-    println!("");
+    println!("\n----------");
     println!("Fetching: {uri}");
-    println!("---------\n");
+    println!("----------");
 
     let prompt = r#"
 Output a valid HTML document for the webpage that could be located at the URL path provided by the user. Include general navigation anchor tags as well as relative anchor tags to other related pages. Include a minimal amount of inline styles to improve the look of the page. Make the text content quite long with a decent amount of interesting content. Do not use any dummy text on the page.
@@ -185,7 +170,13 @@ Start the reponse with the following exact characters:
     let stream = reqwest::Client::new()
         .post("https://api.openai.com/v1/chat/completions")
         .header("content-type", "application/json")
-        .header("authorization", &format!("Bearer {}", *OPENAI_API_KEY))
+        .header(
+            "authorization",
+            &format!(
+                "Bearer {}",
+                env::var("OPENAI_API_KEY").map_err(|_| Error::EnvironmentError)?
+            ),
+        )
         .body(serde_json::to_string(&body).map_err(|_| Error::SerializationError)?)
         .send()
         .await
