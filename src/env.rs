@@ -1,13 +1,5 @@
 use std::env;
 
-use tokio::process::Command;
-
-pub fn print() {
-    Command::new("env")
-        .spawn()
-        .expect("env command failed to start");
-}
-
 pub fn commit_sha() -> String {
     env::var("COMMIT_SHA").unwrap_or_else(|_| "unknown".to_string())
 }

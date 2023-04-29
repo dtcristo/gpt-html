@@ -1,7 +1,6 @@
 # syntax=docker/dockerfile:1
-FROM rust:alpine AS chef
+FROM --platform=linux/amd64 clux/muslrust:stable AS chef
 WORKDIR /app
-RUN apk add --no-cache build-base
 RUN cargo install cargo-chef
 
 FROM chef AS prepare
@@ -10,16 +9,15 @@ RUN cargo chef prepare --recipe-path recipe.json
 
 FROM chef AS build
 COPY --from=prepare /app/recipe.json recipe.json
-RUN apk add --no-cache openssl-dev
-RUN cargo chef cook --release --recipe-path recipe.json
+RUN cargo chef cook --release --target x86_64-unknown-linux-musl --recipe-path recipe.json
 COPY . .
-RUN cargo build --release --bin gpt-html
+RUN cargo build --release --target x86_64-unknown-linux-musl --bin gpt-html
 
-FROM alpine AS runtime
-ARG COMMIT_SHA
-ENV COMMIT_SHA="$COMMIT_SHA"
-ENV DOCKER="true"
+FROM --platform=linux/amd64 gcr.io/distroless/static AS runtime
 WORKDIR /app
-COPY --from=build /app/target/release/gpt-html .
+ARG COMMIT_SHA
+ENV COMMIT_SHA="$COMMIT_SHA" \
+    DOCKER="true"
+COPY --from=build /app/target/x86_64-unknown-linux-musl/release/gpt-html .
 EXPOSE 9292
-CMD ["/app/gpt-html"]
+CMD ["./gpt-html"]
