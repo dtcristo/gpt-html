@@ -6,10 +6,7 @@ use futures::{StreamExt, TryStreamExt};
 use reqwest::{header, Client};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    env,
-    error::{Error, Result},
-};
+use crate::{env, prelude::*};
 
 #[derive(Debug, Serialize)]
 struct ChatCompletionsBody {

@@ -14,7 +14,6 @@ pub enum Error {
     RequestError,
     SerializationError,
     DeserializationError,
-    MissingChoiceError,
     StreamError,
 }
 

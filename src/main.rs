@@ -2,10 +2,9 @@ use std::net::SocketAddr;
 
 use axum::Server;
 
-pub use self::error::{Error, Result};
-
 mod env;
 mod error;
+mod prelude;
 mod signal;
 mod web;
 

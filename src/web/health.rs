@@ -3,10 +3,7 @@ use std::time::SystemTime;
 use axum::{response::IntoResponse, Json};
 use serde::Serialize;
 
-use crate::{
-    env,
-    error::{Error, Result},
-};
+use crate::{env, prelude::*};
 
 #[derive(Debug, Serialize)]
 struct HealthBody {
